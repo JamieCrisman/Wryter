@@ -1,0 +1,105 @@
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lato Bold'), url('../fonts/Lato/Lato-Bold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 700;
+  src: local('Lato Bold Italic'), url('../fonts/Lato/Lato-BoldItalic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 300;
+  src: local('Lato Light Italic'), url('../fonts/Lato/Lato-LightItalic.ttf') format('truetype');
+}
+
+@font-face {
+ font-family: "Lato";
+ font-style: normal;
+ font-weight: 300;
+ src: local('Lato Light'), url('../fonts/Lato/Lato-Light.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Droid Serif';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Droid Serif Bold'), url('../fonts/Droid_Serif/DroidSerif-Bold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Droid Serif';
+  font-style: italic;
+  font-weight: 700;
+  src: local('Droid Serif Bold Italic'), url('../fonts/Droid_Serif/DroidSerif-BoldItalic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Droid Serif';
+  font-style: italic;
+  font-weight: 400;
+  src: local('DroidSerif Italic'), url('../fonts/Droid_Serif/DroidSerif-Italic.ttf') format('truetype');
+}
+
+@font-face {
+ font-family: "Droid Serif";
+ font-style: normal;
+ font-weight: 400;
+ src: local('Droid Serif'), url('../fonts/Droid_Serif/DroidSerif.ttf') format('truetype');
+}
+
+body {
+  background-color: #F8F8F8;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  margin: 15px;
+}
+
+h1, h2, h3, h4{
+  font-family: "Lato";
+  font-weight: 300;
+}
+h1{
+  font-size: 3em;
+}
+h2{
+  font-size: 2.5em;
+}
+h3{
+  font-size: 2em;
+}
+
+#theEditor{
+  font-family: "Droid Serif", inherit;
+  width: 100%;
+  height: 100%;
+  outline-width: 0;
+  font-size: 1.8em;
+  line-height: 1.3em;
+}
+
+core-header-panel {
+  background: white;
+}
+core-toolbar {
+  background-color: #03A9F4;
+}
+#navheader {
+  background-color: #56BA89;
+}
+.content {
+  padding: 20px;
+}
+/* drawer is always visible on a wide screen
+   so menu button isn't required */
+core-drawer-panel:not([narrow]) #navicon {
+  display: none;
+}
+
+
+
+
+
+
+
