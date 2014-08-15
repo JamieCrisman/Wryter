@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html>
+<html ng-app="Wryter" ng-csp>
 <head>
   <title>Wryter</title>
   <script src="assets/components/platform/platform.js"></script>
@@ -12,20 +12,24 @@
   <link rel="import" href="assets/components/core-icons/core-icons.html">
   <link rel="import" href="assets/components/paper-icon-button/paper-icon-button.html">
   <script src="assets/components/angular/angular.min.js"></script>
-  <script src="assets/components/angular/controller.js"></script>
+  <script src="assets/js/medium-editor.js"></script>
+  <script src="assets/js/angular-medium-editor.js"></script>
+  <script src="assets/js/controller.js"></script>
+  
   
   <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/medium-editor.min.css">
+  <link rel="stylesheet" href="assets/css/themes/flat.min.css">
 </head>
 
-<body>
+<body ng-controller="MainController as main">
 <core-drawer-panel id="drawerPanel" responsiveWidth="9999px">
-
   <core-header-panel drawer>
     <core-toolbar id="navheader'">
       <span>Wryter</span>
     </core-toolbar>
     <core-menu>
-      <core-item label="">{{Title | "Current Wryting"}}</core-item>
+      <core-item label="">{{main.title}}</core-item>
       <core-item label="Saved"></core-item>
     </core-menu>
    </core-header-panel>
@@ -34,37 +38,11 @@
     <core-toolbar id="mainheader">
       <paper-icon-button 
         id="navicon" icon="menu"></paper-icon-button>
-      <span flex contenteditable>{{Title}}</span>
+      <span flex ng-model="main.title" medium-editor options='{"placeholder": "Enter a title", "disableToolbar": true, "forcePlainText": true, "disableReturn": true}'></span>
     </core-toolbar>
     <div class="content">
-      <h1>testingTESTING</h1>
-      <h2>testingTESTING</h2>
-      <h3>testingTESTING</h3>
-      <div contenteditable id="theEditor">
-        Lorem ipsum dolor sit amet, <strong>consectetur adipiscing elit.</strong> Nunc nec felis sagittis, elementum ligula at, rutrum diam. 
-        Vestibulum at felis at libero lacinia sodales. Quisque id facilisis magna, et mattis turpis. Sed gravida eros a ligula suscipit mollis. 
-        Aliquam euismod pharetra auctor. Phasellus eu orci ipsum. In dignissim sapien vel mauris tempus tincidunt.
-        <br>
-        <b>Fusce</b> pharetra felis in suscipit accumsan. Donec nec mauris sollicitudin dui porta mattis pharetra in nisi. 
-        Nam eu velit vel augue pharetra gravida. Donec congue, elit imperdiet tempor consectetur, neque tortor fringilla nunc, a hendrerit libero arcu id dui. 
-        Pellentesque vehicula dictum arcu quis tincidunt. Sed eu eros quam. Sed sodales ante eu sodales semper. Pellentesque nec commodo nulla. 
-        Donec ac risus non ante malesuada porta venenatis non lectus. Proin egestas feugiat lectus. Phasellus tempor lacus vitae auctor faucibus.
-        <br>
-        Proin dignissim nec mi ut consequat. Nam rutrum blandit hendrerit. Donec nec commodo lorem. Vivamus sollicitudin auctor viverra. 
-        Praesent vitae nulla id lorem elementum molestie. In hac habitasse platea dictumst. Quisque facilisis eleifend orci, id lacinia ipsum suscipit sit amet.
-        <br>
-        Vestibulum elementum purus sagittis sollicitudin dapibus. Phasellus blandit quis mauris vitae congue. Nullam in interdum metus.
-        Maecenas semper, lacus vitae fringilla lobortis, nulla est porta neque, quis rutrum nisi neque id leo. 
-        Maecenas ac dictum elit, ut fringilla erat. Sed eu malesuada ipsum, eu bibendum eros. 
-        Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nam in magna sapien. 
-        Sed viverra laoreet nisl nec laoreet. Maecenas lobortis dolor sed mi pellentesque vehicula. Nam volutpat metus nisi, mattis vehicula odio pulvinar a. 
-        Mauris lobortis porta tortor, at aliquam libero imperdiet ut. Etiam euismod, nibh quis fringilla pellentesque, est metus feugiat nulla, sit amet ullamcorper sem mi a ligula.
-        <br>
-        Aenean eu nisi sit amet diam blandit laoreet. Nunc eget euismod magna. 
-        In vitae ligula in sem tincidunt porttitor. Morbi consectetur diam a quam sollicitudin volutpat. 
-        Ut pulvinar velit lacinia malesuada sollicitudin. Duis vulputate euismod elit, ac suscipit magna fringilla eget. 
-        Curabitur porta mattis lectus a fringilla.
-      </div>
+      <p id="theEditor" ng-model="main.content" medium-editor options='{"placeholder": "Enter a description", "buttons": ["bold", "italic", "underline", "anchor", "header1", "header2", "quote", "orderedlist", "unorderedlist"]}'>
+      </p>
     </div>
   </core-header-panel>
 

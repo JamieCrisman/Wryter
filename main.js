@@ -208,7 +208,7 @@
        *       <p>color = {{color}}</p>
        *     </form>
        * 
-       * @attribute itemSelector
+       * @attribute itemsSelector
        * @type string
        * @default ''
        */
@@ -268,11 +268,11 @@
       },
 
       addListener: function(node) {
-        node.addEventListener(this.activateEvent, this.activateListener);
+        Polymer.addEventListener(node, this.activateEvent, this.activateListener);
       },
 
       removeListener: function(node) {
-        node.removeEventListener(this.activateEvent, this.activateListener);
+        Polymer.removeEventListener(node, this.activateEvent, this.activateListener);
       },
 
       get selection() {
@@ -479,7 +479,7 @@
       /**
        * Returns a list of all meta-data elements with the same type.
        * 
-       * @attribute list
+       * @property list
        * @type array
        * @default []
        */
@@ -653,21 +653,26 @@
        * @param {Element} element The element to which the background is
        * applied.
        * @param {String|Number} icon The name or index of the icon to apply.
-       * @param {String} theme (optional) The name of the theme for the icon.
        * @param {Number} scale (optional, defaults to 1) A scaling factor 
        * with which the icon can be magnified.
+       * @return {Element} The icon element.
        */
       applyIcon: function(element, icon, scale) {
-         var offset = this.getOffset(icon);
-         scale = scale || 1;
-         if (element && offset) {
-           var style = element.style;
-           style.backgroundImage = 'url(' + this.src + ')';
-           style.backgroundPosition = (-offset.offsetX * scale + 'px') + 
-              ' ' + (-offset.offsetY * scale + 'px');
-           style.backgroundSize = scale === 1 ? 'auto' :
-              this.width * scale + 'px';
-         }
+        var offset = this.getOffset(icon);
+        scale = scale || 1;
+        if (element && offset) {
+          var icon = element._icon || document.createElement('div');
+          var style = icon.style;
+          style.backgroundImage = 'url(' + this.src + ')';
+          style.backgroundPosition = (-offset.offsetX * scale + 'px') + 
+             ' ' + (-offset.offsetY * scale + 'px');
+          style.backgroundSize = scale === 1 ? 'auto' :
+             this.width * scale + 'px';
+          if (icon.parentNode !== element) {
+            element.appendChild(icon);
+          }
+          return icon;
+        }
       }
 
     });
@@ -692,15 +697,6 @@
     src: '',
 
     /**
-     * Specifies the size of the icon in pixel units.
-     *
-     * @attribute size
-     * @type string
-     * @default 24
-     */
-    size: 24,
-
-    /**
      * Specifies the icon name or index in the set of icons available in
      * the icon's icon set. If the icon property is specified,
      * the src property should not be.
@@ -711,8 +707,21 @@
      */
     icon: '',
 
+    /**
+     * Alternative text content for accessibility support.
+     * If alt is present and not empty, it will set the element's role to img and add an aria-label whose content matches alt.
+     * If alt is present and is an empty string, '', it will hide the element from the accessibility layer
+     * If alt is not present, it will set the element's role to img and the element will fallback to using the icon attribute for its aria-label.
+     * 
+     * @attribute alt
+     * @type string
+     * @default ''
+     */
+    alt: null,
+
     observe: {
-      'size icon': 'updateIcon'
+      'icon': 'updateIcon',
+      'alt': 'updateAlt'
     },
 
     defaultIconset: 'icons',
@@ -721,31 +730,84 @@
       if (!meta) {
         meta = document.createElement('core-iconset');
       }
-      this.updateIcon();
+
+      // Allow user-provided `aria-label` in preference to any other text alternative.
+      if (this.hasAttribute('aria-label')) {
+        // Set `role` if it has not been overridden.
+        if (!this.hasAttribute('role')) {
+          this.setAttribute('role', 'img');
+        }
+        return;
+      }
+      this.updateAlt();
     },
 
     srcChanged: function() {
-      this.style.backgroundImage = 'url(' + this.src + ')';
-      this.style.backgroundPosition = 'center';
-      this.style.backgroundSize = this.size + 'px ' + this.size + 'px';
+      var icon = this._icon || document.createElement('div');
+      icon.textContent = '';
+      icon.setAttribute('fit', '');
+      icon.style.backgroundImage = 'url(' + this.src + ')';
+      icon.style.backgroundPosition = 'center';
+      icon.style.backgroundSize = '100%';
+      if (!icon.parentNode) {
+        this.appendChild(icon);
+      }
+      this._icon = icon;
     },
 
     getIconset: function(name) {
       return meta.byId(name || this.defaultIconset);
     },
 
-    updateIcon: function() {
-      if (this.size) {
-        this.style.width = this.style.height = this.size + 'px';
+    updateIcon: function(oldVal, newVal) {
+      if (!this.icon) {
+        this.updateAlt();
+        return;
       }
-      if (this.icon) {
-        var parts = String(this.icon).split(':');
-        var icon = parts.pop();
-        if (icon) {
-          var set = this.getIconset(parts.pop());
-          if (set) {
-            set.applyIcon(this, icon, this.size / set.iconSize);
+      var parts = String(this.icon).split(':');
+      var icon = parts.pop();
+      if (icon) {
+        var set = this.getIconset(parts.pop());
+        if (set) {
+          this._icon = set.applyIcon(this, icon);
+          if (this._icon) {
+            this._icon.setAttribute('fit', '');
           }
+        }
+      }
+      // Check to see if we're using the old icon's name for our a11y fallback
+      if (oldVal) {
+        if (oldVal.split(':').pop() == this.getAttribute('aria-label')) {
+          this.updateAlt();
+        }
+      }
+    },
+
+    updateAlt: function() {
+      // Respect the user's decision to remove this element from
+      // the a11y tree
+      if (this.getAttribute('aria-hidden')) {
+        return;
+      }
+
+      // Remove element from a11y tree if `alt` is empty, otherwise
+      // use `alt` as `aria-label`.
+      if (this.alt === '') {
+        this.setAttribute('aria-hidden', 'true');
+        if (this.hasAttribute('role')) {
+          this.removeAttribute('role');
+        }
+        if (this.hasAttribute('aria-label')) {
+          this.removeAttribute('aria-label');
+        }
+      } else {
+        this.setAttribute('aria-label', this.alt ||
+                                        this.icon.split(':').pop());
+        if (!this.hasAttribute('role')) {
+          this.setAttribute('role', 'img');
+        }
+        if (this.hasAttribute('aria-hidden')) {
+          this.removeAttribute('aria-hidden');
         }
       }
     }
@@ -782,20 +844,20 @@
      * @default ''
      */
 
-    /**
-     * Specifies the size of the icon in pixel units.
-     *
-     * @attribute size
-     * @type number
-     * @default 24
-     */
-
   });
 
 ;
 
 
   Polymer('core-header-panel', {
+    
+    /**
+     * Fired when the content has been scrolled.  `details.target` returns
+     * the scrollable element which you can use to access scroll info such as
+     * `scrollTop`.
+     *
+     * @event scroll
+     */
 
     publish: {
       /**
@@ -862,7 +924,7 @@
        * @type boolean
        * @default false
        */
-      shadow: false,
+      shadow: false
     },
     
     domReady: function() {
@@ -875,6 +937,17 @@
 
     get header() {
       return this.$.headerContent.getDistributedNodes()[0];
+    },
+    
+    /**
+     * Returns the scrollable element.
+     *
+     * @property scroller
+     * @type Object
+     */
+    get scroller() {
+      return this.mode === 'scroll' ? 
+          this.$.outerContainer : this.$.mainContainer;
     },
     
     scroll: function() {
@@ -893,11 +966,14 @@
             (atTop && shadowMode[this.mode] || noShadow[this.mode]));
         
         if (tallMode[this.mode]) {
-          header.classList.toggle(this.tallClass, atTop);
+          header.classList.toggle(this.tallClass, atTop || 
+              main.scrollHeight < this.$.outerContainer.offsetHeight);
         }
         
         header.classList.toggle('animate', tallMode[this.mode]);
       }
+      
+      this.fire('scroll', {target: this.scroller}, this, false);
     }
 
   });
@@ -957,6 +1033,16 @@
      */
 
     publish: {
+      
+      /**
+       * Width of the drawer panel.
+       *
+       * @attribute drawerWidth
+       * @type string
+       * @default '256px'
+       */
+      drawerWidth: '256px',
+      
       /**
        * Max-width when the panel changes to narrow layout.
        *
@@ -994,10 +1080,38 @@
        * @type boolean
        * @default false
        */
-      narrow: {value: false, reflect: true}
+      narrow: {value: false, reflect: true},
+      
+      /**
+       * If true, position the drawer to the right.
+       *
+       * @attribute rightDrawer
+       * @type boolean
+       * @default false
+       */
+      rightDrawer: false,
+      
+      /**
+       * If true, swipe to open/close the drawer is disabled.
+       *
+       * @attribute disableSwipe
+       * @type boolean
+       * @default false
+       */
+      disableSwipe: false
+    },
+    
+    eventDelegates: {
+      trackstart: 'trackStart',
+      trackx: 'trackx',
+      trackend: 'trackEnd'
     },
     
     transition: false,
+
+    edgeSwipeSensitivity : 15,
+    
+    dragging : false,
     
     domReady: function() {
       // to avoid transition at the beginning e.g. page loads
@@ -1008,14 +1122,29 @@
       });
     },
 
+    /**
+     * Toggles the panel open and closed.
+     * 
+     * @method togglePanel
+     */
     togglePanel: function() {
       this.selected = this.selected === 'main' ? 'drawer' : 'main';
     },
     
+    /**
+     * Opens the drawer.
+     * 
+     * @method openDrawer
+     */
     openDrawer: function() {
       this.selected = 'drawer';
     },
     
+    /**
+     * Closes the drawer.
+     * 
+     * @method closeDrawer
+     */
     closeDrawer: function() {
       this.selected = 'main';
     },
@@ -1025,7 +1154,61 @@
         this.selected = this.defaultSelected;
       }
       this.narrow = this.queryMatches;
+      this.setAttribute('touch-action', 
+          this.narrow && !this.disableSwipe ? 'pan-y' : '');
       this.fire('core-responsive-change', {narrow: this.narrow});
+    },
+    
+    // swipe support for the drawer, inspired by
+    // https://github.com/Polymer/core-drawer-panel/pull/6
+    trackStart : function(e) {
+      if (this.narrow && !this.disableSwipe) {
+        this.dragging = true;
+
+        if (this.selected === 'main') {
+          this.dragging = this.rightDrawer ?
+              e.pageX >= this.offsetWidth - this.edgeSwipeSensitivity :
+              e.pageX <= this.edgeSwipeSensitivity;
+        }
+
+        if (this.dragging) {
+          this.width = this.$.drawer.offsetWidth;
+          this.transition = false;
+          e.preventTap();
+        }
+      }
+    },
+
+    trackx : function(e) {
+      if (this.dragging) {
+        var x;
+        if (this.rightDrawer) {
+          x = Math.max(0, (this.selected === 'main') ? this.width + e.dx : e.dx);
+        } else {
+          x = Math.min(0, (this.selected === 'main') ? e.dx - this.width : e.dx);
+        }
+        this.moveDrawer(x);
+      }
+    },
+
+    trackEnd : function(e) {
+      if (this.dragging) {
+        this.dragging = false;
+        this.transition = true;
+        this.moveDrawer(null);
+
+        if (this.rightDrawer) {
+          this.selected = e.xDirection > 0 ? 'main' : 'drawer';
+        } else {
+          this.selected = e.xDirection > 0 ? 'drawer' : 'main';
+        }
+      }
+    },
+    
+    moveDrawer: function(translateX) {
+      var s = this.$.drawer.style;
+      s.webkitTransform = s.transform = 
+          translateX === null ? '' : 'translate3d(' + translateX + 'px, 0, 0)';
     }
 
   });
@@ -1096,9 +1279,10 @@
        * @param {Element} element The element to which the icon is
        * applied.
        * @param {String|Number} icon The name the icon to apply.
+       * @return {Element} The icon element
        */
-      applyIcon: function(element, icon, scale) {
-        var root = element.shadowRoot || element;
+      applyIcon: function(element, icon) {
+        var root = element;
         // remove old
         var old = root.querySelector('svg');
         if (old) {
@@ -1109,16 +1293,12 @@
         if (!svg) {
           return;
         }
-        var size = scale * this.iconSize;
-        if (size) {
-          svg.style.height = svg.style.width = size + 'px';
-        } else {
-          svg.setAttribute('height', '100%');
-          svg.setAttribute('width', '100%');
-          svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-        }
+        svg.setAttribute('height', '100%');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         svg.style.display = 'block';
         root.insertBefore(svg, root.firstElementChild);
+        return svg;
       },
       
       /**
@@ -1303,15 +1483,6 @@
       var outerOpacity = touchDown * 0.3;
       var waveOpacity = waveOpacityFn(td, tu, anim);
       return Math.max(0, Math.min(outerOpacity, waveOpacity));
-    }
-
-    function waveGravityToCenterPercentageFn(td, tu, r) {
-      // Convert from ms to s.
-      var touchDown = td / 1000;
-      var touchUp = tu / 1000;
-      var totalElapsed = touchDown + touchUp;
-
-      return Math.min(1.0, touchUp * 6);
     }
 
     // Determines whether the wave should be completely removed.
@@ -1556,8 +1727,6 @@
           // Ripple gravitational pull to the center of the canvas.
           if (wave.endPosition) {
 
-            var translateFraction = waveGravityToCenterPercentageFn(tDown, tUp, wave.maxRadius);
-
             // This translates from the origin to the center of the view  based on the max dimension of  
             var translateFraction = Math.min(1, radius / wave.containerSize * 2 / Math.sqrt(2) );
 
@@ -1788,7 +1957,7 @@
          * @type string
          * @default ''
          */
-         iconSrc: {value: ''},
+         iconSrc: '',
 
          /**
           * (optional) Specifies the icon name or index in the set of icons
@@ -1800,7 +1969,7 @@
           * @type string
           * @default ''
           */
-         icon: {value: ''}
+         icon: ''
 
       },
 
