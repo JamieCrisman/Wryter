@@ -16,10 +16,10 @@
   <script src="assets/js/angular-medium-editor.js"></script>
   <script src="assets/js/controller.js"></script>
   
-  
-  <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/medium-editor.min.css">
-  <link rel="stylesheet" href="assets/css/themes/flat.min.css">
+  <link rel="stylesheet" href="assets/css/themes/flat.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
+ 
 </head>
 
 <body ng-controller="MainController as main">
@@ -41,8 +41,8 @@
       <span flex ng-model="main.title" medium-editor options='{"placeholder": "Enter a title", "disableToolbar": true, "forcePlainText": true, "disableReturn": true}'></span>
     </core-toolbar>
     <div class="content">
-      <p id="theEditor" ng-model="main.content" medium-editor options='{"placeholder": "Enter a description", "buttons": ["bold", "italic", "underline", "anchor", "header1", "header2", "quote", "orderedlist", "unorderedlist"]}'>
-      </p>
+      <div id="theEditor" ng-model="main.content" medium-editor options='{"placeholder": "Start writing!", "buttons": ["bold", "italic", "underline", "header1", "header2", "quote"]}'>
+      </div>
     </div>
   </core-header-panel>
 

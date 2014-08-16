@@ -2264,8 +2264,7 @@ license that can be found in the LICENSE file.
   <script src="assets/js/angular-medium-editor.js"></script>
   <script src="assets/js/controller.js"></script>
   
-  <link rel="stylesheet" href="assets/css/medium-editor.min.css">
-  <link rel="stylesheet" href="assets/css/themes/flat.css">
+  
   <link rel="stylesheet" href="assets/css/styles.css">
  
 </head>
@@ -2288,8 +2287,8 @@ license that can be found in the LICENSE file.
       <span flex="" ng-model="main.title" medium-editor="" options="{&quot;placeholder&quot;: &quot;Enter a title&quot;, &quot;disableToolbar&quot;: true, &quot;forcePlainText&quot;: true, &quot;disableReturn&quot;: true}"></span>
     </core-toolbar>
     <div class="content">
-      <div id="theEditor" ng-model="main.content" medium-editor="" options="{&quot;placeholder&quot;: &quot;Start writing!&quot;, &quot;buttons&quot;: [&quot;bold&quot;, &quot;italic&quot;, &quot;underline&quot;, &quot;header1&quot;, &quot;header2&quot;, &quot;quote&quot;]}">
-      </div>
+      <p id="theEditor" ng-model="main.content" medium-editor="" options="{&quot;placeholder&quot;: &quot;Start writing!&quot;, &quot;buttons&quot;: [&quot;bold&quot;, &quot;italic&quot;, &quot;underline&quot;, &quot;header1&quot;, &quot;header2&quot;, &quot;quote&quot;]}">
+      </p>
     </div>
   </core-header-panel>
 
